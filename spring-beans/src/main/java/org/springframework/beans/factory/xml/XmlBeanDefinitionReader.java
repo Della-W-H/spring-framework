@@ -1,19 +1,3 @@
-/*
- * Copyright 2002-2018 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package org.springframework.beans.factory.xml;
 
 import java.io.IOException;
@@ -52,7 +36,7 @@ import org.springframework.util.xml.XmlValidationModeDetector;
 
 /**
  * Bean definition reader for XML bean definitions.
- * Delegates the actual XML document reading to an implementation
+ * Delegates(代表) the actual XML document reading to an implementation
  * of the {@link BeanDefinitionDocumentReader} interface.
  *
  * <p>Typically applied to a
@@ -63,11 +47,6 @@ import org.springframework.util.xml.XmlValidationModeDetector;
  * The document reader will register each bean definition with the given bean factory,
  * talking to the latter's implementation of the
  * {@link org.springframework.beans.factory.support.BeanDefinitionRegistry} interface.
- *
- * @author Juergen Hoeller
- * @author Rob Harrop
- * @author Chris Beams
- * @since 26.11.2003
  * @see #setDocumentReaderClass
  * @see BeanDefinitionDocumentReader
  * @see DefaultBeanDefinitionDocumentReader

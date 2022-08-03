@@ -49,12 +49,6 @@ import org.springframework.lang.Nullable;
  * <a href="https://commons.apache.org/proper/commons-lang/">Apache's Commons Lang</a>
  * for a more comprehensive suite of {@code String} utilities.
  *
- * @author Keith Donald
- * @author Juergen Hoeller
- * @author Sam Brannen
- * @author Colin Sampaleanu
- * @author Rob Harrop
- * @since 1.1.2
  */
 public abstract class Assert {
 

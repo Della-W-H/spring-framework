@@ -3,6 +3,7 @@ package com.hong.answer;
 import org.junit.Test;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
+import org.springframework.beans.factory.xml.XmlBeanFactory;
 import org.springframework.core.io.ClassPathResource;
 
 
@@ -13,13 +14,19 @@ import org.springframework.core.io.ClassPathResource;
  */
 public class Demo1 {
 
-    @Test
+	@Test
 	public void test1(){
 		ClassPathResource rs = new ClassPathResource("spring-context.xml");
 		DefaultListableBeanFactory factory = new DefaultListableBeanFactory();
 		XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(factory);
 		reader.loadBeanDefinitions(rs);
 
+		System.out.println(factory.getBean("human").toString());
+	}
+
+	@Test
+	public void test2(){
+		XmlBeanFactory factory = new XmlBeanFactory(new ClassPathResource("spring-context.xml"));
 		System.out.println(factory.getBean("human").toString());
 	}
 }

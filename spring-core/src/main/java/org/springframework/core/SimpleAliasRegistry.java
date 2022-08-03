@@ -1,19 +1,3 @@
-/*
- * Copyright 2002-2018 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package org.springframework.core;
 
 import java.util.ArrayList;
@@ -30,29 +14,33 @@ import org.springframework.util.StringUtils;
 import org.springframework.util.StringValueResolver;
 
 /**
- * Simple implementation of the {@link AliasRegistry} interface.
+ * Simple implementation of the {@link AliasRegistry(别名注册表)} interface.
  * Serves as base class for
  * {@link org.springframework.beans.factory.support.BeanDefinitionRegistry}
  * implementations.
- *
- * @author Juergen Hoeller
- * @since 2.5.2
+
  */
 public class SimpleAliasRegistry implements AliasRegistry {
 
 	/** Logger available to subclasses */
 	protected final Log logger = LogFactory.getLog(getClass());
 
-	/** Map from alias to canonical name */
+	/** Map from alias to canonical(正规的) name  要注意啊 key是别名 value才是真名*/
 	private final Map<String, String> aliasMap = new ConcurrentHashMap<>(16);
 
 
 	@Override
 	public void registerAlias(String name, String alias) {
+		//厉害啊 大佬们 工具类utils 都是自己写的啊 但是核心还是用到了 JDK 没办法 谁不是这样呢？
 		Assert.hasText(name, "'name' must not be empty");
 		Assert.hasText(alias, "'alias' must not be empty");
+
+		//todo 为啥 这个地方要加锁啊？ 上面是并发工具类哎
+		//这里是做了什么呢？需要将整个 concurrentHashMap锁起来呢？ 因为 此处的真实情况是 alias才是key 意味着 可能存在多个key对应一个相同的value值
+		//此时 1.8的结点锁 就可能无法满足了 最好是将所有的相同的value的值 对应的key都锁起来 但是实际操作没法对map做这么细粒度的区分 因为没必要 也麻烦
 		synchronized (this.aliasMap) {
 			if (alias.equals(name)) {
+				//其实这一步 或许永远是空执行 毕竟 同名的永远都添加不上 因为判断先执行啊
 				this.aliasMap.remove(alias);
 				if (logger.isDebugEnabled()) {
 					logger.debug("Alias definition '" + alias + "' ignored since it points to same name");
@@ -60,6 +48,9 @@ public class SimpleAliasRegistry implements AliasRegistry {
 			}
 			else {
 				String registeredName = this.aliasMap.get(alias);
+				//registeredName就是name一样的就是名不一样 为了做区分
+				//registeredName必不可为 null 毕竟是 concurrentHashMap 先尝试去掉这层判断以后报错再说
+				//只能说 我太年轻了 这是get方法 取不到值 即为null 没有问题
 				if (registeredName != null) {
 					if (registeredName.equals(name)) {
 						// An existing alias - no need to re-register
@@ -86,6 +77,7 @@ public class SimpleAliasRegistry implements AliasRegistry {
 	/**
 	 * Return whether alias overriding is allowed.
 	 * Default is {@code true}.
+	 * 嗯 意味着 此处肯定有不一样的重写 即根据条件判断是否 可以定义多个 同value不同key的 entity 不 应该说Node
 	 */
 	protected boolean allowAliasOverriding() {
 		return true;
@@ -112,6 +104,7 @@ public class SimpleAliasRegistry implements AliasRegistry {
 
 	@Override
 	public void removeAlias(String alias) {
+		// TODO: 2022/8/3 此处没必要加 锁啊 ？
 		synchronized (this.aliasMap) {
 			String name = this.aliasMap.remove(alias);
 			if (name == null) {
@@ -143,6 +136,8 @@ public class SimpleAliasRegistry implements AliasRegistry {
 		this.aliasMap.forEach((alias, registeredName) -> {
 			if (registeredName.equals(name)) {
 				result.add(alias);
+				//呦吼 递归 少见啊 但是为啥用递归
+				// TODO: 2022/8/3 淦 意味存在 这种这种情况 即 ：一个别名 其他别名的注册名 ..... 这是是要赶尽杀绝 将别名的别名都找出来
 				retrieveAliases(alias, result);
 			}
 		});
