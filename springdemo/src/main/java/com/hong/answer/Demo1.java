@@ -1,5 +1,6 @@
 package com.hong.answer;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;

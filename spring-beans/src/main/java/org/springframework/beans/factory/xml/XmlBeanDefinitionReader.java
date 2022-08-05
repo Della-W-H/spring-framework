@@ -296,14 +296,16 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 			logger.info("Loading XML bean definitions from " + encodedResource);
 		}
 
+		//通过ThreadLocal来记录 已经加载的资源 意味着一个 线程至多只能加载四个 资源啊 待定？
 		Set<EncodedResource> currentResources = this.resourcesCurrentlyBeingLoaded.get();
 		if (currentResources == null) {
 			currentResources = new HashSet<>(4);
 			this.resourcesCurrentlyBeingLoaded.set(currentResources);
 		}
 		if (!currentResources.add(encodedResource)) {
+			//即不能添加已经存在的 的 资源信息
 			throw new BeanDefinitionStoreException(
-					"Detected cyclic loading of " + encodedResource + " - check your import definitions!");
+					"Detected(检测到) cyclic loading of " + encodedResource + " - check your import definitions!");
 		}
 		try {
 			InputStream inputStream = encodedResource.getResource().getInputStream();
@@ -312,6 +314,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 				if (encodedResource.getEncoding() != null) {
 					inputSource.setEncoding(encodedResource.getEncoding());
 				}
+				//核心加载 操作
 				return doLoadBeanDefinitions(inputSource, encodedResource.getResource());
 			}
 			finally {
@@ -325,6 +328,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 		finally {
 			currentResources.remove(encodedResource);
 			if (currentResources.isEmpty()) {
+				//经典的ThreadLocal资源释放 以防发生OOM
 				this.resourcesCurrentlyBeingLoaded.remove();
 			}
 		}
@@ -368,6 +372,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 			throws BeanDefinitionStoreException {
 		try {
 			Document doc = doLoadDocument(inputSource, resource);
+			//讲资源文件对应的beanDefinition信息保存到 registry中
 			return registerBeanDefinitions(doc, resource);
 		}
 		catch (BeanDefinitionStoreException ex) {
@@ -483,8 +488,11 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 */
 	public int registerBeanDefinitions(Document doc, Resource resource) throws BeanDefinitionStoreException {
 		BeanDefinitionDocumentReader documentReader = createBeanDefinitionDocumentReader();
+		//查出 注册前的beanDefinition保存数量
 		int countBefore = getRegistry().getBeanDefinitionCount();
+		//注册器 注册beanDefinition
 		documentReader.registerBeanDefinitions(doc, createReaderContext(resource));
+		//返回 这一次注册的beanDefinition数量
 		return getRegistry().getBeanDefinitionCount() - countBefore;
 	}
 
